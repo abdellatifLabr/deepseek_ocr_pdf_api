@@ -1,13 +1,25 @@
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from dpsk_ocr_pdf import pdf_to_text
+from dpsk_ocr_pdf import load_llm_components, pdf_to_text
+
+
+# Lifespan context manager for loading LLM on startup
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load LLM components on startup
+    load_llm_components(MODEL_PATH, MAX_CONCURRENCY)
+    yield
+    # Cleanup if needed (e.g., llm.shutdown() if available)
+
 
 app = FastAPI(
     title="DeepSeek OCR API",
     description="Extract text from PDFs using DeepSeek OCR",
+    lifespan=lifespan,
 )
 
 # Load config from env or defaults (adjust as needed)

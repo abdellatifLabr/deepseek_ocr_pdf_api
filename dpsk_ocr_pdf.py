@@ -12,6 +12,50 @@ from tqdm import tqdm
 from vllm import LLM, SamplingParams
 from vllm.model_executor.models.registry import ModelRegistry
 
+# Global variables for LLM and related components
+llm = None
+logits_processors = None
+sampling_params = None
+
+
+def load_llm_components(model_path, max_concurrency):
+    """Load LLM and related components once."""
+    global llm, logits_processors, sampling_params
+    if llm is None:
+        ModelRegistry.register_model(
+            "DeepseekOCRForCausalLM", DeepseekOCRForCausalLM
+        )  # noqa: E501
+
+        llm = LLM(
+            model=model_path,
+            hf_overrides={"architectures": ["DeepseekOCRForCausalLM"]},
+            block_size=256,
+            enforce_eager=False,
+            trust_remote_code=True,
+            max_model_len=8192,
+            swap_space=0,
+            max_num_seqs=max_concurrency,
+            tensor_parallel_size=1,
+            gpu_memory_utilization=0.9,
+            disable_mm_preprocessor_cache=True,
+        )
+
+        logits_processors = [
+            NoRepeatNGramLogitsProcessor(
+                ngram_size=20,
+                window_size=50,
+                whitelist_token_ids={128821, 128822},
+            )
+        ]
+
+        sampling_params = SamplingParams(
+            temperature=0.0,
+            max_tokens=8192,
+            logits_processors=logits_processors,
+            skip_special_tokens=False,
+            include_stop_str_in_output=True,
+        )
+
 
 class Colors:
     RED = "\033[31m"
@@ -80,37 +124,8 @@ def pdf_to_text(
     num_workers,
     skip_repeat,
 ):
-    ModelRegistry.register_model(
-        "DeepseekOCRForCausalLM", DeepseekOCRForCausalLM
-    )  # noqa: E501  # noqa: E501
-
-    llm = LLM(
-        model=model_path,
-        hf_overrides={"architectures": ["DeepseekOCRForCausalLM"]},
-        block_size=256,
-        enforce_eager=False,
-        trust_remote_code=True,
-        max_model_len=8192,
-        swap_space=0,
-        max_num_seqs=max_concurrency,
-        tensor_parallel_size=1,
-        gpu_memory_utilization=0.9,
-        disable_mm_preprocessor_cache=True,
-    )
-
-    logits_processors = [
-        NoRepeatNGramLogitsProcessor(
-            ngram_size=20, window_size=50, whitelist_token_ids={128821, 128822}
-        )
-    ]  # window for fast；whitelist_token_ids: <td>,</td>
-
-    sampling_params = SamplingParams(
-        temperature=0.0,
-        max_tokens=8192,
-        logits_processors=logits_processors,
-        skip_special_tokens=False,
-        include_stop_str_in_output=True,
-    )
+    if llm is None:
+        raise RuntimeError("LLM not loaded. Call load_llm_components first.")
 
     print(f"{Colors.RED}PDF loading .....{Colors.RESET}")
 
