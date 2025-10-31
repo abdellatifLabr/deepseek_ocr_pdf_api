@@ -1,0 +1,8 @@
+PyMuPDF
+tqdm
+torch
+Pillow
+vllm
+fastapi
+uvicorn
+python-multipart
