@@ -144,8 +144,7 @@ def pdf_to_text(
                 continue
 
         pages[f"page_{jdx}"] = {
-            "det": content,
-            "text": content,  # det and text are the same
+            "text": content,
         }
 
         jdx += 1

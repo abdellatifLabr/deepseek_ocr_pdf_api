@@ -68,11 +68,9 @@ Extract text from an uploaded PDF file.
 ```json
 {
   "page_0": {
-    "det": "Extracted text content...",
     "text": "Extracted text content..."
   },
   "page_1": {
-    "det": "More extracted text...",
     "text": "More extracted text..."
   }
 }
