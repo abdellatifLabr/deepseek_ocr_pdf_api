@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from run_dpsk_ocr_pdf import pdf_to_text
+from dpsk_ocr_pdf import pdf_to_text
 
 app = FastAPI(
     title="DeepSeek OCR API",
