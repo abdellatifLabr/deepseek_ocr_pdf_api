@@ -104,6 +104,16 @@ python api.py
 - CUDA-compatible GPU (recommended for model inference)
 - Sufficient RAM for model loading (depends on model size)
 
+## Docker Deployment
+
+Build and run the Docker container:
+```bash
+docker build -t deepseek-ocr-api .
+docker run -p 8000:8000 --gpus all deepseek-ocr-api
+```
+
+For Salad AI deployment, use the provided Dockerfile with GPU support.
+
 ## Development
 
 Run code formatting and linting:
